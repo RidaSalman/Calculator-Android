@@ -51,14 +51,39 @@ class MainActivity : AppCompatActivity() {
         OnEqual()
     }
 
-    fun onOpertorClick(view: View) {
-        if(!stateerror && lastNumeric){
-            binding.datatv.append((view as Button).text)
-            lastdot = false
-            lastNumeric = false
-            OnEqual()
+    fun onOperatorClick(view: View) {
+        if (!stateerror && lastNumeric) {
+            val operator = (view as Button).text.toString()
+            val expressionText = binding.datatv.text.toString()
+
+            if (operator == "%") {
+                try {
+                    val expression = ExpressionBuilder(expressionText)
+                        .build()
+
+                    val result = expression.evaluate()
+                    val percentage = result / 100
+
+                    binding.result.visibility = View.VISIBLE
+                    binding.result.text = "=" + percentage.toBigDecimal().stripTrailingZeros().toPlainString()
+
+                    lastNumeric = true
+                    lastdot = false
+                } catch (ex: Exception) {
+                    binding.result.text = "Error"
+                    stateerror = true
+                    lastNumeric = false
+                    Log.e("expression error", ex.toString())
+                }
+            } else {
+                binding.datatv.append(operator)
+                lastNumeric = false
+                lastdot = false
+            }
         }
     }
+
+
 
     fun onBackClick(view: View) {
         binding.datatv.text = binding.datatv.text.toString().dropLast(1)
@@ -79,18 +104,37 @@ class MainActivity : AppCompatActivity() {
         binding.datatv.text = ""
         lastNumeric = false
     }
-
-    fun OnEqual(){
-        if(lastNumeric && !stateerror) {
-
+    fun OnEqual() {
+        if (lastNumeric && !stateerror) {
             val txt = binding.datatv.text.toString()
-            expression = ExpressionBuilder(txt).build()
-            try {
-                val result = expression.evaluate()
-                binding.result.visibility = View.VISIBLE
-                binding.result.text = '=' + result.toString()
 
-            } catch (ex:ArithmeticException){
+            // Handle percentage operator
+            val modifiedText = txt.replace("%", "/100*")
+
+            expression = ExpressionBuilder(modifiedText).build()
+            try {
+                var result = expression.evaluate()
+
+                // Check if the result is a whole number
+                val roundedResult = if (result % 1 == 0.0) {
+                    result.toLong().toString()
+                } else {
+                    result.toString()
+                }
+
+                // Check if the expression contains a percentage calculation
+                if (txt.contains("%")) {
+                    // Extract the percentage value from the expression
+                    val percentageValue = txt.substring(txt.indexOf("%") - 2, txt.indexOf("%") - 1).toDouble()
+
+                    // Calculate the actual percentage result
+                    result = result * percentageValue / 100
+                }
+
+                binding.result.visibility = View.VISIBLE
+                binding.result.text = "= $roundedResult"
+
+            } catch (ex: ArithmeticException) {
                 Log.e("evaluate error", ex.toString())
                 binding.result.text = "error"
                 stateerror = true
@@ -98,4 +142,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+
+
+
 }

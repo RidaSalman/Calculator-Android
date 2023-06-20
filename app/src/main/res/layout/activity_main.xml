@@ -153,7 +153,7 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_1"
                 style="@style/digit_button"
-                android:onClick="onDigitClock"
+                android:onClick="onDigitClick"
                 android:text="1" />
 
             <com.google.android.material.button.MaterialButton
@@ -171,7 +171,7 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/subtract"
                 style="@style/operator_button"
-                android:onClick="onOpertorClick"
+                android:onClick="onOperatorClick"
                 android:text="-" />
         </LinearLayout>
 
